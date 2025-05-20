@@ -112,14 +112,16 @@ volumes:
 
 ### 2. Portainer
 - **Platform**: Apple Silicon (M1/M2) için linux/arm64
+- **Portlar**:
+  - 9000: Web arayüzü
 - **Volumes**:
   - `/etc/localtime`: Sistem saat dilimi
   - `/var/run/docker.sock`: Docker API erişimi
   - `portainer_data`: Kalıcı veri depolama
 - **Özellikler**:
   - Traefik ile entegrasyon
-  - Web arayüzü (portainer.localhost)
-  - Port 9000 üzerinden erişim
+  - Web arayüzü (portainer.localhost veya localhost:9000)
+  - Port 9000 üzerinden doğrudan erişim
 
 ## Güvenlik Özellikleri
 
@@ -148,7 +150,7 @@ volumes:
    - Port: 8080
 
 2. **Portainer**:
-   - URL: http://portainer.localhost
+   - URL: http://portainer.localhost veya http://localhost:9000
    - Port: 9000
 
 ## Kurulum Adımları

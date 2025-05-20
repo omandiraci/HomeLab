@@ -96,10 +96,13 @@ portainer:
   platform: linux/arm64
   container_name: portainer
   restart: unless-stopped
+  ports:
+    - "9000:9000"
 ```
 - En son Portainer CE sürümünü kullanır
 - Apple Silicon uyumluluğu
 - Otomatik yeniden başlatma
+- 9000 portu üzerinden doğrudan erişim
 
 ### Volume Yapılandırması
 ```yaml
@@ -168,7 +171,7 @@ docker-compose restart traefik
    - URL: http://traefik.localhost:8080
 
 2. **Portainer**:
-   - URL: http://portainer.localhost
+   - URL: http://portainer.localhost veya http://localhost:9000
 
 ## Güvenlik Önerileri
 

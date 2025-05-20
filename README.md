@@ -28,7 +28,7 @@ This project provides a Docker Compose configuration for setting up a containeri
 ## Access
 
 - Traefik dashboard: http://localhost:8080
-- Portainer: http://localhost:9000
+- Portainer: http://localhost:9000 veya http://portainer.localhost
 
 ## License
 
