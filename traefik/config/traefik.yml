@@ -1,32 +1,25 @@
 api:
   dashboard: true
-  insecure: true  # Only for testing environment
+  insecure: true  # Yalnızca yerel geliştirme için açık
 
 entryPoints:
   web:
     address: ":80"
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
   websecure:
-    address: ":443"
+    address: ":443"  # Şu anda kullanılmıyor ama gelecekte HTTPS için hazır
 
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: proxy
 
 log:
-  level: DEBUG
+  level: DEBUG  # Geliştirme sırasında hata ayıklama için faydalı
 
-accessLog: {}
+accessLog: {}  # İsteğe bağlı, tüm erişim kayıtlarını loglar
 
-metrics:
-  prometheus: {}
+# metrics:
+#   prometheus: {}  # Eğer Prometheus ile monitoring yapılmıyorsa kapatılabilir
 
-pilot:
-  dashboard: false
-
+# pilot:
+#   dashboard: false  # Traefik Pilot kullanılmıyorsa gerek yok

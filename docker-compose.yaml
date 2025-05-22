@@ -1,60 +1,67 @@
+version: '3.8'  # Docker Compose dosyasının sürümü
+
 services:
   traefik:
-    image: traefik:v2.5
-    platform: linux/arm64  # Specify platform for Apple Silicon
+    image: traefik:v2.5  # Traefik'in resmi Docker imajı
     container_name: traefik
-    restart: unless-stopped
+    restart: unless-stopped  # Container durursa otomatik yeniden başlat
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges:true  # Güvenlik: container yeni ayrıcalıklar kazanamaz
+
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
+      - "80:80"       # HTTP portu → localhost:80 ile ulaşılabilir
+      - "443:443"     # HTTPS portu (şu anda kullanılmıyor ama açık)
+      - "8080:8080"   # Traefik dashboard erişim portu → localhost:8080
+
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/config:/etc/traefik
-      - ./traefik/certificates:/certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Traefik, Docker container'larını otomatik tanır
+      - ./traefik/config:/etc/traefik:ro              # Opsiyonel: manuel config dosyaları için
+      - ./traefik/certificates:/certificates          # Opsiyonel: sertifika dosyaları için
+
     command:
-      - --api.insecure=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.file.directory=/etc/traefik
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --log.level=DEBUG
+      - --api.dashboard=true                          # Traefik dashboard'u etkinleştir
+      - --api.insecure=true                           # Dashboard’a şifresiz ve korumasız erişim (sadece yerel kullanım için)
+      - --providers.docker=true                       # Docker provider'ını etkinleştir (container'ları otomatik algılar)
+      - --providers.docker.exposedbydefault=false     # Container'lar varsayılan olarak dışa açılmaz
+      - --entrypoints.web.address=:80                 # "web" adında bir HTTP giriş noktası tanımlanır (port 80)
+      - --entrypoints.websecure.address=:443          # "websecure" adında HTTPS giriş noktası tanımlanır (şu an kullanılmıyor)
+      - --log.level=DEBUG                             # Log seviyesini DEBUG yapar (hata ayıklamak için faydalı)
+
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.enable=true"  # Bu servis için Traefik yönlendirmesi aktif
+      - "traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)"  # localhost/traefik üzerinden erişim
+      - "traefik.http.routers.traefik.service=api@internal"         # Traefik dashboard servisine yönlendirme
+      - "traefik.http.routers.traefik.entrypoints=web"              # HTTP (web) üzerinden çalışacak
+
     networks:
-      - proxy
+      - proxy  # Traefik ile diğer servislerin haberleşeceği özel bir ağ
 
   portainer:
-    image: portainer/portainer-ce:latest
-    platform: linux/arm64  # Specify platform for Apple Silicon
+    image: portainer/portainer-ce:latest  # Portainer’ın topluluk sürümü
     container_name: portainer
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+
     ports:
-      - "9000:9000"
+      - "9000:9000"  # Portainer'a doğrudan erişim → localhost:9000
+
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Docker yönetimi için gerekli
+      - portainer_data:/data  # Kalıcı veriler (ayarlar, kullanıcılar vs.)
+
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=web"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.enable=true"  # Bu servis için Traefik yönlendirmesi aktif
+      - "traefik.http.routers.portainer.rule=PathPrefix(`/portainer`)"  # localhost/portainer ile erişim
+      - "traefik.http.routers.portainer.entrypoints=web"                # HTTP üzerinden çalışacak
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000" # Portainer’ın iç servis portu
+
     networks:
-      - proxy
+      - proxy  # Traefik ile aynı ağda olmalı
 
 networks:
   proxy:
-    driver: bridge
+    driver: bridge  # Docker’ın varsayılan köprü ağı
 
 volumes:
-  portainer_data:
+  portainer_data:  # Portainer için kalıcı veri saklama alanı
